@@ -22,6 +22,8 @@ jobs:
           pip install pandas pyarrow fastparquet requests
 
       - name: Run update script
+        env:
+          VULP_TOKEN: ${{ secrets.VULP_TOKEN }}
         run: python scripts/atualiza_score_agenda.py
 
       - name: Commit and push changes
