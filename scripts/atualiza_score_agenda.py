@@ -15,16 +15,21 @@ def atualizar_agenda_do_dia():
         print(f"⚠️ {NOME_ARQUIVO} ainda não existe no repositório. Pulando...")
         return
 
-    df_agenda = pd.read_csv(NOME_ARQUIVO)
+    # AJUSTE: Adicionado sep=';' para ler corretamente seu arquivo
+    df_agenda = pd.read_csv(NOME_ARQUIVO, sep=';')
     
     # 2. Verifica se há jogos pendentes
+    if 'Status' not in df_agenda.columns:
+        print(f"❌ Erro: Coluna 'Status' não encontrada. Colunas reais: {df_agenda.columns.tolist()}")
+        return
+
     pendentes = df_agenda[df_agenda['Status'] != 'Full'].copy()
 
     if pendentes.empty:
         print("✅ Todos os jogos da agenda já estão com status 'Full'.")
         return
 
-    # 3. Carregar a base principal (apenas se houver pendências)
+    # 3. Carregar a base principal
     print("🔍 Buscando atualizações na base principal...")
     try:
         df_principal = pd.read_parquet(URL_PARQUET)
@@ -42,7 +47,6 @@ def atualizar_agenda_do_dia():
         if match_id in df_principal.index:
             jogo_base = df_principal.loc[match_id]
             
-            # Se na base principal estiver Full, atualizamos a agenda
             if jogo_base['Status'] == 'Full':
                 df_agenda.at[idx, 'Goals_H_HT'] = jogo_base['Goals_H_HT']
                 df_agenda.at[idx, 'Goals_A_HT'] = jogo_base['Goals_A_HT']
@@ -51,13 +55,12 @@ def atualizar_agenda_do_dia():
                 df_agenda.at[idx, 'Status'] = 'Full'
                 houve_alteracao = True
     
-    # 5. Salvar se houver mudanças
+    # 5. Salvar se houver mudanças (Mantendo o padrão de ponto e vírgula)
     if houve_alteracao:
-        df_agenda.to_csv(NOME_ARQUIVO, index=False)
+        df_agenda.to_csv(NOME_ARQUIVO, index=False, sep=';')
         print(f"✅ Agenda {NOME_ARQUIVO} atualizada com novos placares.")
     else:
-        print("ℹ️ Nenhum placar novo encontrado na base principal para os jogos de hoje.")
+        print("ℹ️ Nenhum placar novo encontrado na base principal.")
 
-# EXECUÇÃO (Obrigatório para o GitHub Actions rodar)
 if __name__ == "__main__":
     atualizar_agenda_do_dia()
