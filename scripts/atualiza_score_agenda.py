@@ -21,7 +21,8 @@ def atualizar_agenda_do_dia():
 
     df_agenda = pd.read_csv(NOME_ARQUIVO, sep=';', dtype={'Match ID': str})
     
-    pendentes = df_agenda[df_agenda['Status'] != 'Full'].copy()
+    #pendentes = df_agenda[df_agenda['Status'] != 'Full'].copy()
+    pendentes = df_agenda.copy()
     if pendentes.empty:
         print("✅ Tudo 'Full' ou agenda vazia.")
         return
@@ -54,10 +55,17 @@ def atualizar_agenda_do_dia():
                 df_agenda.at[idx, 'Goals_A_HT'] = jogo_base['Goals_A_HT']
                 df_agenda.at[idx, 'Goals_H_FT'] = jogo_base['Goals_H_FT']
                 df_agenda.at[idx, 'Goals_A_FT'] = jogo_base['Goals_A_FT']
+                df_agenda.at[idx, 'Score'] = f"{int(jogo_base['Goals_H_FT'])} - {int(jogo_base['Goals_A_FT'])}"
                 df_agenda.at[idx, 'Status'] = 'Full'
                 houve_alteracao = True
     
     if houve_alteracao:
+
+        # Converte para inteiro (tratando possíveis valores nulos)
+        colunas_gols = ['Goals_H_HT', 'Goals_A_HT', 'Goals_H_FT', 'Goals_A_FT']
+        for col in colunas_gols:
+            df_agenda[col] = pd.to_numeric(df_agenda[col], errors='coerce').fillna(0).astype(int)
+        
         df_agenda.to_csv(NOME_ARQUIVO, index=False, sep=';')
         print(f"✅ Agenda {NOME_ARQUIVO} atualizada com base privada!")
     else:
