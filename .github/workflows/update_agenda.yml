@@ -1,8 +1,8 @@
 name: Update Daily Agenda
 
 on:
-  schedule:
-    - cron: '5 3,15 * * *'  # Roda a cada hora (ajuste conforme necessário)
+  #schedule:
+  #  - cron: '5 3,15 * * *'  # Roda a cada hora (ajuste conforme necessário)
   workflow_dispatch:      # Permite rodar manualmente pelo botão no GitHub
 
 jobs:
